@@ -40,21 +40,34 @@ class Appointment extends Model
             ->when($filters['to'] ?? null, fn($q,$v) => $q->whereDate('date','<=',$v));
     }
 
-    public function toFullCalendarEvent(): array
-    {
-        $start = $this->start_time ? "{$this->date} {$this->start_time}" : "{$this->date} 09:00:00";
-        $end   = $this->end_time   ? "{$this->date} {$this->end_time}"   : "{$this->date} 09:30:00";
+    // public function toFullCalendarEvent(): array
+    // {
+    //     $start = $this->start_time ? "{$this->date} {$this->start_time}" : "{$this->date} 09:00:00";
+    //     $end   = $this->end_time   ? "{$this->date} {$this->end_time}"   : "{$this->date} 09:30:00";
 
-        return [
-            'id' => $this->id,
-            'title' => $this->client_name . ' • ' . ($this->service ?: 'Appointment'),
-            'start' => $start,
-            'end' => $end,
-            'color' => match($this->status) {
-                'approved' => '#16a34a',
-                'cancelled'=> '#ef4444',
-                default    => '#0ea5e9',
-            }
-        ];
-    }
+    //     return [
+    //         'id' => $this->id,
+    //         'title' => $this->client_name . ' • ' . ($this->service ?: 'Appointment'),
+    //         'start' => $start,
+    //         'end' => $end,
+    //         'color' => match($this->status) {
+    //             'approved' => '#16a34a',
+    //             'cancelled'=> '#ef4444',
+    //             default    => '#0ea5e9',
+    //         }
+    //     ];
+    // }
+    public function toFullCalendarEvent(): array
+{
+    $start = $this->start_time ? "{$this->date} {$this->start_time}" : "{$this->date} 09:00:00";
+    $end   = $this->end_time   ? "{$this->date} {$this->end_time}"   : "{$this->date} 09:30:00";
+
+    return [
+        'id'    => $this->id,
+        'title' => "{$this->client_name} - " . ($this->service ?: 'Appointment'),
+        'start' => $start,
+        'end'   => $end,
+    ];
+}
+
 }
