@@ -38,7 +38,7 @@
             <input type="text" 
                    name="search" 
                    value="{{ $filters['search'] ?? '' }}" 
-                   placeholder="Search by appointment no, client, email, service..." 
+                   placeholder="Search by appointment no,branch,client, email, service..." 
                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white">
           </div>
           
@@ -59,6 +59,15 @@
                 @endforeach
               </select>
             </div>
+            <div>
+  <select name="branch" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white">
+    <option value="">All Branches</option>
+    @foreach(['Main Branch','East Branch','West Branch','South Branch','North Branch'] as $b)
+      <option value="{{ $b }}" @selected(($filters['branch'] ?? '') === $b)>{{ $b }}</option>
+    @endforeach
+  </select>
+</div>
+
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,6 +119,7 @@
               <tr>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Branch</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Service</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
@@ -145,9 +155,15 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      {{ $a->branch ?: 'Not specified' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                       {{ $a->service ?: 'Not specified' }}
                     </span>
                   </td>
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,24 +249,40 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const el = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(el, {
-    themeSystem: 'bootstrap5', 
-    initialView: 'dayGridMonth',
-    height: 600,
-    events: '{{ route('admin.calendar.events') }}',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-    },
-    eventContent: function(arg) {
-      // Only show the title (name), no dot or extra color box
-      return { html: `<span>${arg.event.title}</span>` };
-    }
-  });
-  calendar.render();
+    const el = document.getElementById('calendar');
+    
+    const calendar = new FullCalendar.Calendar(el, {
+        themeSystem: 'bootstrap5',
+        initialView: 'dayGridMonth',
+        height: 600,
+        displayEventTime: false,
+        events: function(fetchInfo, successCallback, failureCallback) {
+            const params = new URLSearchParams({
+                start: fetchInfo.startStr,
+                end: fetchInfo.endStr,
+                search: "{{ $filters['search'] ?? '' }}",
+                status: "{{ $filters['status'] ?? '' }}",
+                service: "{{ $filters['service'] ?? '' }}",
+                branch: "{{ $filters['branch'] ?? '' }}",
+                from: "{{ $filters['from'] ?? '' }}",
+                to: "{{ $filters['to'] ?? '' }}",
+            });
+            
+            fetch('{{ route('admin.calendar.events') }}?' + params)
+                .then(res => res.json())
+                .then(data => successCallback(data))
+                .catch(err => failureCallback(err));
+        },
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        }
+    });
+
+    calendar.render();
 });
+
 </script>
 
 @endpush

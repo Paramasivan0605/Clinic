@@ -8,35 +8,41 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    public function index(Request $request)
-    {
-        $filters = $request->only(['search','status','service','from','to']);
-        $appointments = Appointment::query()
-            ->orderBy('date', 'asc')
-            ->filter($filters)
-            ->paginate(10)
-            ->withQueryString();
+  public function index(Request $request)
+{
+    $filters = $request->only(['search','status','service','branch','from','to']);
 
-        return view('admin.appointments.index', [
-            'appointments' => $appointments,
-            'filters' => $filters,
-        ]);
-    }
+    $appointments = Appointment::query()
+        ->orderBy('date', 'asc')
+        ->filter($filters)
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('admin.appointments.index', [
+        'appointments' => $appointments,
+        'filters' => $filters,
+    ]);
+}
+
 
     public function events(Request $request)
-    {
-        // Optional date window filter for FullCalendar
-        $start = $request->query('start');
-        $end   = $request->query('end');
+{
+    $start  = $request->query('start');
+    $end    = $request->query('end');
+    $filters = $request->only(['search', 'status', 'service', 'branch', 'from', 'to']);
 
-        $q = Appointment::query();
-        if ($start) $q->whereDate('date', '>=', $start);
-        if ($end)   $q->whereDate('date', '<=', $end);
+    $q = Appointment::query();
 
-        return response()->json(
-            $q->get()->map->toFullCalendarEvent()
-        );
-    }
+    // Optional date range filter for FullCalendar
+    if ($start) $q->whereDate('date', '>=', $start);
+    if ($end)   $q->whereDate('date', '<=', $end);
+
+    // Apply other filters
+    $q->filter($filters);
+
+    return response()->json($q->get()->map->toFullCalendarEvent());
+}
+
 
     // public function updateStatus(Request $request, Appointment $appointment)
     // {
