@@ -12,7 +12,7 @@ class AppointmentController extends Controller
     {
         $filters = $request->only(['search','status','service','from','to']);
         $appointments = Appointment::query()
-            ->latest('date')
+            ->orderBy('date', 'asc')
             ->filter($filters)
             ->paginate(10)
             ->withQueryString();
@@ -38,15 +38,15 @@ class AppointmentController extends Controller
         );
     }
 
-    public function updateStatus(Request $request, Appointment $appointment)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,approved,cancelled'
-        ]);
-        $appointment->update(['status' => $request->status]);
+    // public function updateStatus(Request $request, Appointment $appointment)
+    // {
+    //     $request->validate([
+    //         'status' => 'required|in:pending,approved,cancelled'
+    //     ]);
+    //     $appointment->update(['status' => $request->status]);
 
-        return back()->with('ok','Status updated');
-    }
+    //     return back()->with('ok','Status updated');
+    // }
 
     public function destroy(Appointment $appointment)
     {

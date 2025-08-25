@@ -12,13 +12,23 @@ class Appointment extends Model
         'date','start_time','end_time','status','notes'
     ];
 
+    protected static function booted()
+{
+    static::creating(function ($appointment) {
+        // AP-20250825-0001
+       $appointment->appointment_no = 'AP-' . now()->format('Y') . '-' . str_pad((Appointment::max('id') + 1), 4, '0', STR_PAD_LEFT);
+    });
+}
+
+
     // Simple filter scopes
     public function scopeFilter(Builder $q, array $filters): Builder
     {
         return $q
             ->when($filters['search'] ?? null, function ($q, $s) {
                 $q->where(function($qq) use ($s) {
-                    $qq->where('client_name','like',"%$s%")
+                     $qq->where('appointment_no', 'like', "%$s%")
+                        ->orwhere('client_name','like',"%$s%")
                        ->orWhere('client_email','like',"%$s%")
                        ->orWhere('client_phone','like',"%$s%")
                        ->orWhere('service','like',"%$s%");

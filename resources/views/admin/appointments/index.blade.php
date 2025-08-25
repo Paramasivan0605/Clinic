@@ -27,8 +27,9 @@
           <div class="accordion-body">
             <form method="GET" action="{{ route('admin.appointments.index') }}" class="row g-3">
               <div class="col-12">
-                <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
-                       placeholder="Search by client, email, service..." class="form-control">
+               <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" 
+                   placeholder="Search by appointment no, client, email, service..." class="form-control">
+
               </div>
               <div class="col-md-6">
                 <select name="status" class="form-select">
@@ -80,7 +81,10 @@
             <tbody>
               @forelse($appointments as $a)
                 <tr>
-                  <td>{{ $a->id }}</td>
+                  <td>
+  <span class="fw-bold text-primary">{{ $a->appointment_no }}</span>
+  <div class="small text-muted">{{ $a->id }}</div> <!-- optional: still show DB id -->
+</td>
                   <td>
                     <div class="fw-semibold">{{ $a->client_name }}</div>
                     <div class="small text-muted">{{ $a->client_email }} {{ $a->client_phone ? '• '.$a->client_phone : '' }}</div>
